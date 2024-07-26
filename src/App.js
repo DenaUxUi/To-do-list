@@ -1,39 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import ContactItem from './ContactItem'; // Импортируем новый компонент
 
 const App = () => {
   const [name, setName] = useState('');
-  const [nameList, setNameList] = useState(() => {
-    const savedNames = localStorage.getItem('name');
-    return savedNames ? JSON.parse(savedNames) : [];
+  const [phone, setPhone] = useState('');
+  const [contactList, setContactList] = useState(() => {
+    const savedContacts = localStorage.getItem('contacts');
+    return savedContacts ? JSON.parse(savedContacts) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('name', JSON.stringify(nameList));
-  }, [nameList]);
+    localStorage.setItem('contacts', JSON.stringify(contactList));
+  }, [contactList]);
 
-  const addName = () => {
-    if (name.trim()) {
-      const newNameList = [
+  const addContact = () => {
+    if (name.trim() && phone.trim()) {
+      const newContactList = [
         {
-          id: nameList.length === 0 ? 1 : nameList[0].id + 1,
-          name: name.trim()
+          id: contactList.length === 0 ? 1 : contactList[0].id + 1,
+          name: name.trim(),
+          phone: phone.trim(),
         },
-        ...nameList
+        ...contactList
       ];
-      setNameList(newNameList);
+      setContactList(newContactList);
       setName('');
+      setPhone('');
     }
   };
 
-  const deleteName = (id) => {
-    const newNameList = nameList.filter(item => item.id !== id);
-    setNameList(newNameList);
+  const deleteContact = (id) => {
+    const newContactList = contactList.filter(item => item.id !== id);
+    setContactList(newContactList);
   };
 
-  const saveEdit = (id, newName) => {
-    const newNameList = nameList.map(item => item.id === id ? { ...item, name: newName } : item);
-    setNameList(newNameList);
+  const saveEdit = (id, newName, newPhone) => {
+    const newContactList = contactList.map(item =>
+      item.id === id ? { ...item, name: newName, phone: newPhone } : item
+    );
+    setContactList(newContactList);
   };
 
   return (
@@ -41,70 +46,29 @@ const App = () => {
       <div className="nav">
         <input
           type="text"
-          id="name"
+          placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button className="btn-style" id="add" onClick={addName}>Add</button>
+        <input
+          type="text"
+          placeholder="Phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+        <button className="btn-style" onClick={addContact}>Add Contact</button>
       </div>
-      <div id="root" className="container">
-        {nameList.map(item => (
+      <div className="container">
+        {contactList.map(item => (
           <React.Fragment key={item.id}>
-            <NameItem 
+            <ContactItem 
               item={item} 
-              deleteName={deleteName} 
+              deleteContact={deleteContact} 
               saveEdit={saveEdit} 
             />
             <div className="line"></div>
           </React.Fragment>
         ))}
-      </div>
-    </div>
-  );
-};
-
-const NameItem = ({ item, deleteName, saveEdit }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(item.name);
-
-  const handleSave = () => {
-    saveEdit(item.id, editName);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditName(item.name);
-    setIsEditing(false);
-  };
-
-  return (
-    <div className="action">
-      <div className="action-outputs">
-        {!isEditing ? (
-          <div id={`item-${item.id}`}>
-            <h3 id={`name-${item.id}`}>{item.name}</h3>
-          </div>
-        ) : (
-          <input
-            type="text"
-            id={`editInput-${item.id}`}
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-          />
-        )}
-      </div>
-      <div className="action-buttons">
-        {!isEditing ? (
-          <>
-            <button className="btn-style del" id={`del-${item.id}`} onClick={() => deleteName(item.id)}>Delete</button>
-            <button className="btn-style edit" id={`edit-${item.id}`} onClick={() => setIsEditing(true)}>Edit</button>
-          </>
-        ) : (
-          <>
-            <button className="btn-style" id={`cancel-${item.id}`} onClick={handleCancel}>Cancel</button>
-            <button className="btn-style" id={`save-${item.id}`} onClick={handleSave}>Save</button>
-          </>
-        )}
       </div>
     </div>
   );
